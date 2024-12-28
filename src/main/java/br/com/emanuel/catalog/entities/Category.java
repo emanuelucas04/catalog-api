@@ -1,11 +1,9 @@
 package br.com.emanuel.catalog.entities;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Category implements Serializable {
-    @Serial
     private static final long serialVersionUID = 1L;
 
     private long id;
