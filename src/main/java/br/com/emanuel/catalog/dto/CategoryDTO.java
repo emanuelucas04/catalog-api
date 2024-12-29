@@ -1,6 +1,7 @@
 package br.com.emanuel.catalog.dto;
 
 import br.com.emanuel.catalog.entities.Category;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
@@ -18,7 +19,7 @@ public class CategoryDTO implements Serializable {
         this.name = name;
     }
 
-    public CategoryDTO(Category entity) {
+    public CategoryDTO(@NotNull Category entity) {
         this.id = entity.getId();
         this.name = entity.getName();
     }
