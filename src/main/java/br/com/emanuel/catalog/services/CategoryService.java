@@ -2,10 +2,13 @@ package br.com.emanuel.catalog.services;
 
 import br.com.emanuel.catalog.dto.CategoryDTO;
 import br.com.emanuel.catalog.entities.Category;
+import br.com.emanuel.catalog.exceptions.DatabaseException;
 import br.com.emanuel.catalog.exceptions.ResourceNotFoundException;
 import br.com.emanuel.catalog.repositories.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
@@ -51,6 +54,18 @@ public class CategoryService {
             return new CategoryDTO(entity);
         } catch (EntityNotFoundException ex) {
             throw new ResourceNotFoundException("ID not found " + id);
+        }
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Resource not found");
+        }
+        try {
+            repository.deleteById(id);
+        } catch (DataIntegrityViolationException ex) {
+            throw new DatabaseException("Falha de integridade referencial");
         }
     }
 }
