@@ -1,9 +1,11 @@
 package br.com.emanuel.catalog.services;
 
 import br.com.emanuel.catalog.dto.ProductDTO;
+import br.com.emanuel.catalog.entities.Category;
 import br.com.emanuel.catalog.entities.Product;
 import br.com.emanuel.catalog.exceptions.DatabaseException;
 import br.com.emanuel.catalog.exceptions.ResourceNotFoundException;
+import br.com.emanuel.catalog.repositories.CategoryRepository;
 import br.com.emanuel.catalog.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +24,9 @@ public class ProductService {
     @Autowired
     private ProductRepository repository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Transactional(readOnly = true)
     public Page<ProductDTO> findAllPaged(PageRequest pageRequest) {
         Page<Product> products = repository.findAll(pageRequest);
@@ -38,10 +43,7 @@ public class ProductService {
     @Transactional
     public ProductDTO create(ProductDTO dto) {
         Product entity = new Product();
-        entity.setName(dto.getName());
-        entity.setDescription(dto.getDescription());
-        entity.setPrice(dto.getPrice());
-        entity.setImgUrl(dto.getImgUrl());
+        copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
         return new ProductDTO(entity);
     }
@@ -50,7 +52,7 @@ public class ProductService {
     public ProductDTO update(Long id, ProductDTO dto) {
         try {
             Product entity = repository.getOne(id);
-            entity.setName(dto.getName());
+            copyDtoToEntity(dto, entity);
             entity = repository.save(entity);
             return new ProductDTO(entity);
         } catch (EntityNotFoundException ex) {
@@ -68,5 +70,19 @@ public class ProductService {
         } catch (DataIntegrityViolationException ex) {
             throw new DatabaseException("Failed of reference integrand");
         }
+    }
+
+    private void copyDtoToEntity(ProductDTO dto, Product entity) {
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setDate(dto.getDate());
+        entity.setImgUrl(dto.getImgUrl());
+        entity.setPrice(dto.getPrice());
+
+        entity.getCategories().clear();
+        dto.getCategories().forEach(categoryDTO -> {
+            Category category = categoryRepository.getOne(categoryDTO.getId());
+            entity.getCategories().add(category);
+        });
     }
 }
